@@ -1,0 +1,8 @@
+iptools
+dnspython
+requests
+lxml
+pyyaml
+straight.plugin
+gevent
+mmh3
