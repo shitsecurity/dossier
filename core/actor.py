@@ -35,13 +35,47 @@ def unique( f ):
 			return f( self, data, *args, **kwargs )
 	return wrapper
 
-class Actor( Greenlet ):
+class Signals( object ):
 
-	def __init__( self, channels, **kwargs ):
-		super( Actor, self ).__init__()
+	def invoke( self, *args, **kwargs ): pass
+
+	def shutdown( self, *args, **kwargs ): pass
+
+class Options( object ):
+
+	def __init__( self, *args, **kwargs ):
+		super( Options, self ).__init__( *args, **kwargs )
+		self._options = {}
+
+	def set_option( self, key, value ):
+		self._options[ key ] = value
+
+	def get_option( self, key ):
+		return self._options[ key ]
+
+	def configure( self, *args, **kwargs ): pass
+
+class Plugins( dict ):
+
+	def __init__( self, plugins ):
+		super( Plugins, self ).__init__([ (_.name,_) for _ in plugins ])
+	
+	def invoke( self ):
+		[ _.invoke() for _ in self.values() ]
+
+	def shutdown( self ):
+		[ _.shutdown() for _ in self.values() ]
+
+	def loaded( self, plugin ):
+		return plugin in self.keys()
+
+class Actor( Signals, Greenlet ):
+
+	def __init__( self, channels, *args, **kwargs ):
+		super( Actor, self ).__init__( *args, **kwargs )
 		self.queue = Queue()
-		[ channels.setdefault( x, [] ).append( self.queue )
-		  for x in self.listeners ]
+		[ channels.setdefault( _, [] ).append( self.queue )
+		  for _ in self.listeners ]
 		self.channels = channels
 
 	def _run( self ):
@@ -51,15 +85,37 @@ class Channels( dict ):
 
 	def publish( self, channel, data ):
 		if channel != '*':
-			[ x.put(( channel, data )) for x in self[ '*' ] ]
-		basename = lambda x: '.'.join( x.split('.')[:-1] )
+			[ _.put(( channel, data )) for _ in self.get('*',[]) ]
+		basename = lambda _: '.'.join( _.split('.')[:-1] )
 		if channel.endswith('.*'):
 			broadcast = channel[:-2]
 			for key in self.keys():
 				if basename( key ).endswith( broadcast ):
-					[ x.put( data ) for x in self[ key ] ]
+					[ _.put( data ) for _ in self[ key ] ]
 		else:
 			broadcast = '{}.*'.format( basename(channel) )
-			[ x.put( data )
-			  for x in set(chain( self.get( channel, [] ),
+			[ _.put( data )
+			  for _ in set(chain( self.get( channel, [] ),
 				  				  self.get( broadcast, [] ))) ]
+
+class FilterMixin( object ):
+
+	def __init__( self, *args, **kwargs ):
+		super( FilterMixin, self ).__init__( *args, **kwargs )
+		self.accept_filters = []
+		self.reject_filters = []
+
+	def filter_accept( self, lambdaf ):
+		self.accept_filters.append( lambdaf )
+
+	def filter_reject( self, lambdaf ):
+		self.reject_filters.append( lambdaf )
+
+	def filter( self, *args, **kwargs ):
+		if any([_( *args, **kwargs ) for _ in self.reject_filters ]):
+			return True
+
+		if self.accept_filters and not all([_( *args, **kwargs )
+											for _ in self.accept_filters ]):
+
+			return True

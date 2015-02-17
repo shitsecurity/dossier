@@ -11,7 +11,7 @@ from itertools import chain
 
 def any( domain, resolver=None ):
 	return reduce( lambda x,y: x+y,
-					filter( lambda x: len(x)>0,
-							map(lambda x: x(domain, resolver=resolver ),
+					filter( lambda _: len(_)>0,
+							map(lambda _: _(domain, resolver=resolver ),
 								[ a, aaaa, soa, ns, cname, mx, srv ] )),
 					[])

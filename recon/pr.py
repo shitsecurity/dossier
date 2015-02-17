@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from requests import Session
-from requests.exceptions import Timeout
+import http
 
 def hash( domain ):
 	seed = "Mining PageRank is AGAINST GOOGLE'S TERMS OF SERVICE."\
@@ -13,14 +12,11 @@ def hash( domain ):
 		hash = hash & 0xffffffff
 	return '8%x' % hash
 
-def pr( domain, session = None ):
+def pr( domain, session=None ):
 	url = 'http://' \
 		+ 'toolbarqueries.google.com' \
 		+ '/tbr?client=navclient-auto&ch={hash}&features=Rank&q=info:{domain}'
-	session = session or Session()
 	url = url.format( hash=hash(domain), domain=domain )
-	headers = {'User-Agent': 'Mozilla/5.0'}
-	response = session.request('get', url, headers=headers, timeout=10,
-								allow_redirects=True, verify=False )
-	rank = response.text.split(':')[-1].strip()
+	data = http.fetch( url, session=session )
+	rank = data.split(':')[-1].strip()
 	return int( rank )

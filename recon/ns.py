@@ -7,9 +7,9 @@ def ns( domain, resolver=None ):
 	resolver = resolver or dns.resolver.Resolver()
 	dn = dns.name.from_text( str(domain) )
 	try:
-		names = [ x.to_text() for x in resolver.query( dn, 'NS' )]
+		names = [ _.to_text() for _ in resolver.query( dn, 'NS' )]
 	except( dns.resolver.NXDOMAIN,
 			dns.resolver.NoAnswer,
 			dns.resolver.NoNameservers ):
 		return []
-	return [ x.rstrip('.') for x in names ]
+	return [ _.rstrip('.') for _ in names ]

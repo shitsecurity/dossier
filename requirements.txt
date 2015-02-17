@@ -2,7 +2,12 @@ iptools
 dnspython
 requests
 lxml
+BeautifulSoup4
 pyyaml
 straight.plugin
 gevent
 mmh3
+configparser
+python-geoip-geolite2
+python-whois
+ipwhois

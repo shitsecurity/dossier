@@ -7,15 +7,20 @@ from recon.a import a
 from recon.ptr import ptr
 from recon.http import fetch
 
+from http import Session
+
 def dnsdigger( host ):
 	url = 'http://www.dnsdigger.com/'
 	token_url = url 
 	query_url = url + 'hostcollision.php?host={host}&token={token}'
+	session=Session()
 	token = re.search( 'name="token"\svalue="(?P<token>.*?)">',
-						fetch( token_url ),
+						fetch( token_url, session=session ),
 						re.U & re.M ).group('token')
 	names = re.findall('<a\shref=".*?"\srel="nofollow">(.*?)</a>',
-						fetch( query_url.format( token=token, host=host ) ),
+						fetch( query_url.format( token=token, host=host ),
+								session=session,
+								headers={'Referer': url} ),
 						re.U and re.M )
 	return names
 
@@ -31,7 +36,7 @@ def yougetsignal( host ):
 								method='post', 
 								data=data, 
 								headers=headers))
-	return [ x[0] for x in results['domainArray'] ]
+	return [ _[0] for _ in results['domainArray'] ]
 
 def verify( domain, ips, engine=a, resolver=None ):
 	'''verify at least one ip resolves to domain name

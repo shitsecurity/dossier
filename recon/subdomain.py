@@ -52,7 +52,7 @@ def load( file ):
 						'data',
 						file )
 	with open(path,'rb') as fh:
-		return [ x.strip() for x in fh.readlines() ]
+		return [ _.strip() for _ in fh.readlines() ]
 
 def subdomains( wordlist='subdomains.wl' ):
 	return load( wordlist )

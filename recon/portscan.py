@@ -12,17 +12,30 @@ from itertools import chain
 from random import shuffle
 from copy import copy
 
-def syn( host, ports, timeout=5 ):
-	packet = IP( dst=host )/TCP(sport=RandShort(),
-								dport=ports,
-								flags="S")
-	results, ignored = sr( packet, timeout=5, verbose=False )
-	open=[]
-	for result in results:
-		for sa in result[1::2]:
-			if sa[1].flags==0x12:
-				open.append( sa.sport )
-	return open
+def localhost( host ):
+	if host.startswith('127.'):
+		msg = 'scanning localhost is NOT reliable, consult scapy docs'
+		logging.warning(msg)
+		conf.L3socket=L3RawSocket # scapy localhost magic
+
+def syn( host, ports, interval=0.5, retry=2, timeout=2 ):
+	localhost( host )
+	packet = IP( dst=host )/TCP(sport=RandShort(), dport=ports, flags="S")
+	results, ignored = sr( packet,  inter=interval,
+									timeout=timeout,
+									retry=retry,
+									verbose=False )
+	return [ _[0].dport for _ in
+			results.filter( lambda ( s, r ): TCP in r and r[TCP].flags&2 ) ]
+
+def udp( host, ports, interval=0.5, retry=2, timeout=2 ):
+	localhost( host )
+	packet = IP( dst=host )/UDP(sport=RandShort(),dport=ports)
+	results, ignored = sr( packet,  inter=interval,
+									timeout=timeout,
+									retry=retry,
+									verbose=False )
+	return [ _[0].dport for _ in results.filter( lambda ( s, r ): UDP in r ) ]
 
 class Port( yaml.YAMLObject ):
 	yaml_tag = '!Port'
@@ -43,9 +56,15 @@ class PortRange( yaml.YAMLObject ):
 												end=self.end )
 
 	def prepare( self ):
-		return [ x for x in xrange(self.start,self.end)]
+		return [ _ for _ in xrange(self.start,self.end)]
 
-def tcp_ports( file='ports.yaml' ):
+def tcp_ports( *args, **kwargs ):
+	return load_ports( 'tcp', *args, **kwargs )
+
+def udp_ports( *args, **kwargs ):
+	return load_ports( 'udp', *args, **kwargs )
+
+def load_ports( type, file='ports.yaml' ):
 	path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 						'..',
 						'data',
@@ -53,7 +72,7 @@ def tcp_ports( file='ports.yaml' ):
 	with open(path,'rb') as fh:
 		return map( int,
 					reduce( lambda ctx,ii: ctx+ii.prepare(),
-							yaml.load( fh )['tcp'],
+							yaml.load( fh )[type],
 							[] ))
 
 def randomize( ports ):

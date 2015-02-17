@@ -7,7 +7,7 @@ from ns import domains, Session, subdomains
 
 class NSLookupActor( Actor ):
 
-	name = 'domain.lookup'
+	name = 'ns.lookup'
 
 	listeners =  [
 		'domain.*',
@@ -24,16 +24,16 @@ class NSLookupActor( Actor ):
 	@unique
 	def act( self, domain ):
 		names = lookup( domain, resolver=self.resolver )
-		[ self.channels.publish('ip.*', x ) for x in names ]
+		[ self.channels.publish('ip.*', _ ) for _ in names ]
 		[ self.channels.publish( 'map.domain_ip',
 								{'domain':domain,'ip': _ }) for _ in names ]
 
 class DomainActor( Actor ):
 
-	name = 'domain.meta'
+	name = 'ns.ext'
 
 	listeners = [
-		'domain.meta',
+		'domain.ext',
 		'domain.lookup.*'
 	]
 
@@ -46,11 +46,11 @@ class DomainActor( Actor ):
 	@unique
 	def act( self, domain ):
 		names = meta( domain, resolver=self.resolver )
-		[ self.channels.publish('domain.lookup', x ) for x in names ]
+		[ self.channels.publish('domain.lookup', _ ) for _ in names ]
 
 class ReverseDNSActor( Actor ):
 
-	name = 'domain.reverse'
+	name = 'ns.reverse'
 
 	listeners = [
 		'domain.reverse_dns', #'ip.reverse_dns',
@@ -65,7 +65,7 @@ class ReverseDNSActor( Actor ):
 	@unique
 	def act( self, domain ):
 		names = reverse_dns( domain, resolver=self.resolver )
-		[ self.channels.publish('domain.*', x ) for x in names ]
+		[ self.channels.publish('domain.lookup.reverse_dns', _) for _ in names ]
 
 class ReverseIPActor( Actor ):
 
@@ -85,7 +85,7 @@ class ReverseIPActor( Actor ):
 	@unique
 	def act( self, ip ):
 		names = reverse_ip( ip, resolver=self.resolver )
-		[ self.channels.publish('domain.lookup.*', x ) for x in names ]
+		[ self.channels.publish('domain.lookup.*', _ ) for _ in names ]
 
 class BingIPActor( Actor ):
 
@@ -109,7 +109,7 @@ class BingIPActor( Actor ):
 
 class GoogleDNActor( Actor ):
 
-	name = 'domain.google'
+	name = 'ns.google'
 
 	listeners = [
 		'domain.google',

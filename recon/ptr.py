@@ -15,7 +15,7 @@ def ptr( ip, resolver=None ):
 			dns.resolver.NoAnswer,
 			dns.resolver.NoNameservers ):
 		return []
-	return [ x.to_text() for x in names ]
+	return [ _.to_text() for _ in names ]
 
 def verify( ip, domain, engine=a, resolver=None ):
 	'''verify domain resolves to ip address

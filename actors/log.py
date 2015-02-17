@@ -3,11 +3,11 @@
 import logging
 
 from core.log import log as setup_log
-from core.actor import Actor, forever, hash
+from core.actor import Actor, forever, hash, FilterMixin, Options
 
 class LogActor( Actor ):
 
-	name = 'log'
+	name = 'verbose'
 
 	listeners =  [ '*', ]
 
@@ -26,31 +26,32 @@ class LogActor( Actor ):
 		logging.debug( '{channel} | {data}'.format( channel=channel.upper(),
 													data = data ))
 
-class FileActor( Actor ):
+class FileActor( Options, FilterMixin, Actor ):
 
-	name = 'file'
+	name = 'report'
 
 	listeners =  [ '*', ]
 
 	def __init__( self, *args, **kwargs ):
 		super( FileActor, self ).__init__( *args, **kwargs )
 		self.cache = set()
-		self.file = 'results'
+		self.set_option('file','results')
 
-		self.map = []
-		self.port = []
-		self.rank = []
+	def configure( self, config ):
+		if config.has_option(self.name, 'file'):
+			self.set_option('file', config.get(self.name, 'file'))
+		
+	def invoke( self ):
+		self.fh = open( self.get_option('file'), 'wb+' )
+
+	def shutdown( self ):
+		self.fh.close()
 
 	@forever
 	def act( self ):
 		(channel,data) = self.queue.get()
 
-		if channel == 'signal' and data == 'shutdown':
-			self.save_results()
-			return
-
-		elif channel == 'opt.file':
-			self.file = data
+		if self.filter( channel, data ):
 			return
 
 		hashed = hash( data )
@@ -58,20 +59,35 @@ class FileActor( Actor ):
 		self.cache.add( hashed )
 
 		type = channel.split('.')[0]
-		if type == 'map' and channel == 'map.domain_ip':
-			self.map.append('{} {}'.format( data.get('ip'),
-											data.get('domain') ))
+
+		if type == 'map':
+			self.fh.write('MAP {} {}\n'.format( data.get('ip'),
+												data.get('domain') ))
+
+		elif type == 'ip':
+			self.fh.write('IP {}\n'.format( data ))
+
+		elif type == 'domain':
+			self.fh.write('DOMAIN {}\n'.format( data ))
+
 		elif type == 'rank':
 			engine = channel.split('.')[1]
-			self.rank.append('{} {} {}'.format( engine,
-												data.get('domain'),
-												data.get('rank') ))
-		elif type == 'port':
-			self.port.append('{} {}'.format(data.get('ip'),
-											data.get('port')))
+			self.fh.write('RANK.{} {} {}\n'.format( engine.upper(),
+													data.get('domain'),
+													data.get('rank')) )
 
-	def save_results( self ):
-		with open( self.file, 'wb+' ) as fh:
-			[ fh.write( '\n'.join( _ ) ) for _ in [ self.map,
-													self.rank,
-													self.port ] ]
+		elif type == 'port':
+			proto = channel.split('.')[1]
+			self.fh.write('PORT.{} {} {}\n'.format( proto,
+													data.get('ip'),
+													data.get('port')) )
+
+		elif type == 'geoip':
+			self.fh.write( 'GEOIP {} {}\n'.format( data.get('ip'),
+													data.get('country') ))
+
+		elif type == 'whois':
+			key_type, key_data = channel.split('.')[1:3]
+			self.fh.write('WHOIS.{} {} {}\n'.format(key_type.upper(),
+													data.get(key_type),
+													data.get(key_data) ))

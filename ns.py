@@ -36,20 +36,20 @@ def lookupv6( domain, *args, **kwargs ):
 
 def meta( domain, *args, **kwargs ):
 	names = set()
-	[names.update(x(domain,*args,**kwargs)) for x in [soa,ns,mx,srv,cname]]
+	[names.update(_(domain,*args,**kwargs)) for _ in [soa,ns,mx,srv,cname]]
 	return list(names)
 
 def reverse_ip( ip, *args, **kwargs ):
 	names = set()
-	[ names.update( all_dns(x) )
-	  for x in ptr( ip, *args, **kwargs )
-	  if verify_ip( ip, x ) ]
+	[ names.update( all_dns(_) )
+	  for _ in ptr( ip, *args, **kwargs )
+	  if verify_ip( ip, _ ) ]
 	return list(names)
 
 def reverse_dns( domain, *args, **kwargs ):
 	names = set()
 	ips = a(domain,*args,**kwargs)
-	names.update([x.lstrip('www.') for x in
+	names.update([_.lstrip('www.') for _ in
 				  filter(partial(verify_dns,
 					  			 ips=ips,
 					  			 *args,

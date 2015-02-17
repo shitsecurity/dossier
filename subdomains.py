@@ -5,9 +5,11 @@ from core.pool import Pool
 
 from recon.subdomain import Subdomain, subdomains, subdomains as load_subdomains
 
+from itertools import ifilter
+
 def brute( domain, subdomains=None, pool=None, concurrency=10 ):
 	domain = Subdomain( domain )
 	subdomains = subdomains or load_subdomains()
 	pool = pool or Pool(concurrency)
-	return filter( None, pool.map( lambda x: x if domain.exists(x) else None,
+	return ifilter(None, pool.imap( lambda _: _ if domain.exists(_) else None,
 									subdomains ))

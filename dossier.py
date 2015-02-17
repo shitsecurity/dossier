@@ -6,7 +6,7 @@ from __future__ import print_function
 import sys
 import argparse
 
-from ctl import actors, run, wait
+from ctl import actors, run, wait, configure, config
 from iptools import IpRangeList
 
 NORMAL = '\033[m'; DARK_GREEN = '\033[32m'
@@ -30,8 +30,10 @@ def parse_args():
 						help='enable light modules' )
 	parser.add_argument('--all', action='store_true', dest='all',
 						help='enable all modules' )
+	parser.add_argument('--conf', metavar='', dest='config', type=str,
+						help='config file', default='config.conf' )
 	parser.add_argument('--file', metavar='', dest='file', type=str,
-						help='write results to file', default=None )
+						help='write report to file', default=None )
 	parser.add_argument('--disable', metavar='', dest='disabled', type=str,
 						help='disable modules', nargs='+', default=[] )
 	parser.add_argument('--enable', metavar='', dest='enabled', type=str,
@@ -46,40 +48,42 @@ def parse_args():
 						help='domain names', nargs='+', default=[] )
 	args = parser.parse_args()
 
-	heavy = [
-			'subdomains.brute',
-			'domain.reverse',
-			'scan.syn',
-			'rank.tic',
-			'rank.pr',
-			'ip.subnet',
-	]
-
 	light = [
-			'file',
-			'log',
+			'report',
+			'verbose',
 			'ip.reverse',
-			'domain.meta',
-			'domain.lookup',
-			'domain.google',
+			'ns.ext',
+			'ns.lookup',
+			'ns.google',
 			'ip.bing',
+			'ip.geo',
 	]
 
 	if args.light and args.all:
 		parser.error("go home hacker, you're drunk")
 
+	if args.enabled and args.all:
+		parser.error('shit happens bro')
+
+	if args.enabled and args.disabled:
+		parser.error('u dun goofed')
+
 	if args.light:
 		args.enabled += light
 
-	if args.all:
-		args.enabled = light+heavy
-
 	args.enabled = list(set(args.enabled))
 
-	if args.enabled and args.disabled:
-		parser.error('u dun goofd')
+	names = [ _.name for _ in actors() ]
 
-	if not any([ args.ip, args.range, args.domain, args.list ]):
+	for name in args.enabled + args.disabled:
+		if name not in names:
+			parser.error('invalid plugin {}'.format( name ))
+
+	if args.list:
+		[ print(' [*] {}'.format( _ )) for _ in names ]
+		sys.exit()
+
+	if not any([ args.ip, args.range, args.domain ]):
 		parser.error('select target')
 
 	return args
@@ -87,16 +91,17 @@ def parse_args():
 if __name__ == "__main__":
 	args = parse_args()
 
-	if args.list:
-		[ print(' [*] {}'.format(_.name)) for _ in actors() ]
-		sys.exit()
+	channels, plugins = run(include=args.enabled,
+							exclude=args.disabled,
+							all=args.all)
+	configure( config( args.config ), plugins )
 
-	channels, threads = run( include=args.enabled, exclude=args.disabled )
+	if args.file and plugins.loaded('report'):
+		plugins.get('report').set_option('file',args.file)
 
-	if args.file:
-		channels.publish( 'opt.file', args.file )
+	plugins.invoke()
 
-	if args.range:
+	if args.ip or args.range:
 		for ip in IpRangeList(*( args.ip+args.range )):
 			channels.publish( 'ip.*', ip )
 
@@ -105,5 +110,4 @@ if __name__ == "__main__":
 			channels.publish( 'domain.*', domain )
 
 	wait()
-	channels.publish( 'signal', 'shutdown' )
-	wait()
+	plugins.shutdown()

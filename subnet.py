@@ -12,13 +12,15 @@ from functools import partial
 
 from iptools import IpRange
 
-def find( ip, 
-			context=None,
-			mask=24,
-			verify=False,
-			resolver=None,
-			pool=None,
-			concurrency=10 ):
+from itertools import ifilter
+
+def iter_find( ip,
+				context=None,
+				mask=24,
+				verify=False,
+				resolver=None,
+				pool=None,
+				concurrency=10 ):
 
 	resolver = resolver or Resolver()
 	pool = pool or Pool(concurrency)
@@ -28,17 +30,21 @@ def find( ip,
 			context += all_dns( domain )
 	in_subnet = partial( subnet, context )
 	ip_range = IpRange('{ip}/{mask}'.format( ip=ip, mask=mask ))
-	#mapping = {}
-	#for target in ip_range:
-		#for domain in ptr(target,resolver=resolver):
-			#if not verify or verify_domain(target,domain,resolver=resolver):
-				#domains = mapping.setdefault(target,[])
-				#domains += filter(in_subnet,all_dns(domain))
-	#return mapping
 	mapping = []
 	pool = pool or Pool(10)
 	def lookup( target ):
 		for domain in ptr( target, resolver=resolver ):
 			if not verify or verify_domain( target, domain, resolver=resolver ):
-				return (target,filter( in_subnet, all_dns( domain )))
-	return dict([(k,v) for (k,v) in filter(None,pool.map(lookup,ip_range))])
+				return ( target, filter( in_subnet, all_dns( domain )))
+	return ifilter( None, pool.imap( lookup, ip_range ))
+
+def find( *args, **kwargs ):
+	return dict([(k,v) for (k,v) in iter_find( *args, **kwargs )])
+
+def ip_stream( iter ):
+	for _ in iter:
+		yield _[0]
+
+def ip_find( *args, **kwargs ):
+	for ip in ip_stream( iter_find( *args, **kwargs )):
+		yield ip

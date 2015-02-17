@@ -1,42 +1,66 @@
 tcp:
     - !Port { port: 80, handler: 'http' }
+    - !Port { port: 81, handler: 'http' }
+    - !Port { port: 82, handler: 'http' }
     - !Port { port: 443, handler: 'https' }
+    - !Port { port: 8000, handler: 'http' }
+    - !Port { port: 8008, handler: 'http' }
     - !Port { port: 8080, handler: 'http' }
     - !Port { port: 8081, handler: 'http' }
     - !Port { port: 8082, handler: 'http' }
-    - !Port { port: 8000, handler: 'http' }
-    - !Port { port: 8008, handler: 'http' }
     - !Port { port: 8888, handler: 'http' }
+    - !Port { port: 9000, handler: 'http' }
+    - !Port { port: 9001, handler: 'http' }
+    - !Port { port: 9002, handler: 'http' }
+    - !Port { port: 9080, handler: 'http' }
+    - !Port { port: 9443, handler: 'http' }
+    - !Port { port: 7080, handler: 'http' }
+    - !Port { port: 7443, handler: 'http' }
     - !Port { port: 22, handler: 'ssh' }
     - !Port { port: 21, handler: 'ftp' }
     - !Port { port: 23, handler: 'telnet' }
     - !Port { port: 25, handler: 'smtp' }
     - !Port { port: 53, handler: 'dns' }
+    - !Port { port: 67, handler: 'dhcp' }
+    - !Port { port: 69, handler: 'tftp' }
     - !Port { port: 88, handler: 'kerberos' }
     - !Port { port: 110, handler: 'pop3' }
-    - !Port { port: 135, handler: 'dcom' }
+    - !Port { port: 115, handler: 'sftp' }
+    - !Port { port: 135, handler: 'msrpc' }
     - !Port { port: 137, handler: 'netbios' }
     - !Port { port: 138, handler: 'netbios' }
     - !Port { port: 139, handler: 'netbios' }
     - !Port { port: 143, handler: 'imap' }
+    - !Port { port: 161, handler: 'snmp' }
     - !Port { port: 389, handler: 'ldap' }
     - !Port { port: 445, handler: 'smb' }
     - !Port { port: 465, handler: 'smtps' }
     - !Port { port: 636, handler: 'ldaps' }
     - !Port { port: 990, handler: 'ftps' }
+    - !Port { port: 992, handler: 'telnets' }
     - !Port { port: 993, handler: 'imaps' }
     - !Port { port: 995, handler: 'pop3s' }
     - !Port { port: 1080, handler: 'socks' }
     - !Port { port: 1194, handler: 'openvpn' }
     - !Port { port: 1433, handler: 'mssql' }
-    - !Port { port: 1521, handler: 'oracledb' }
+    - !Port { port: 1494, handler: 'citrix' }
+    - !Port { port: 1521, handler: 'oraclesql' }
+    - !Port { port: 1526, handler: 'oraclesql' }
+    - !Port { port: 2077, handler: 'webdisk' }
+    - !Port { port: 2078, handler: 'webdisk' }
     - !Port { port: 2082, handler: 'cpanel' }
     - !Port { port: 2083, handler: 'cpanel' }
     - !Port { port: 2086, handler: 'whm' }
     - !Port { port: 2087, handler: 'whm' }
+    - !Port { port: 2095, handler: 'webmail' }
+    - !Port { port: 2096, handler: 'webmail' }
+    - !Port { port: 2222, handler: 'sftp' }
     - !Port { port: 3306, handler: 'mysql' }
     - !Port { port: 3389, handler: 'rdp' }
+    - !Port { port: 4489, handler: 'rdp' }
+    - !Port { port: 4643, handler: 'virtuozzo' }
     - !Port { port: 5000, handler: 'http' }
+    - !Port { port: 5560, handler: 'oraclesql' }
     - !Port { port: 5222, handler: 'xmpp' }
     - !Port { port: 5223, handler: 'xmpp' }
     - !Port { port: 5269, handler: 'xmpp' }
@@ -46,9 +70,13 @@ tcp:
     - !Port { port: 6379, handler: 'redis' }
     - !Port { port: 6667, handler: 'irc' }
     - !Port { port: 6669, handler: 'irc' }
-    - !PortRange { start: 9200, end: 9300, handler: 'elastic' }
+    - !Port { port: 6697, handler: 'irc' }
     - !Port { port: 7474, handler: 'neo4j' }
-    - !Port { port: 9090, handler: 'http' }
+    - !Port { port: 8443, handler: 'plesk' }
+    - !Port { port: 8880, handler: 'plesk' }
+    - !PortRange { start: 9200, end: 9300, handler: 'elastic' }
+    - !Port { port: 9998, handler: 'plesk' }
+    - !Port { port: 9999, handler: 'irc' }
     - !Port { port: 11211, handler: 'redis' }
     - !Port { port: 11371, handler: 'openpgp' }
     - !Port { port: 27017, handler: 'mongodb' }
@@ -57,4 +85,4 @@ udp:
     - !Port { port: 67, handler: 'dhcp' }
     - !Port { port: 161, handler: 'snmp' }
     - !Port { port: 944, handler: 'nfs' }
-    - !Port { port: 1194, handler: 'vpn' }
+    - !Port { port: 1194, handler: 'openvpn' }

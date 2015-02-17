@@ -1,45 +1,52 @@
 #!/usr/bin/env python
 
 from core import concurrency
-from core.actor import Actor, Channels, wait, Queue
-from core.thread import spawn, start
+from core.actor import Actor, Channels, wait, Plugins
+from core.thread import spawn
 
 from straight.plugin import load
+from configparser import ConfigParser
 
 def actors():
-	return [ x for x in load( 'actors', subclasses=Actor ) ]
+	return [ _ for _ in load( 'actors', subclasses=Actor ) ]
 
-def run( include =[], exclude=[] ):
+def configure( config, plugins ):
+	for name, plugin in plugins.items():
+		if config.has_section( name ):
+			plugin.configure( config )
+
+def config( file ):
+	config_parser = ConfigParser()
+	with open( file, 'rb' ) as fh:
+		config_parser.readfp( fh )
+	return config_parser
+
+def run( include =[], exclude=[], all=False ):
 	channels = Channels()
-	greenlets = start(spawn(filter( lambda _ : exclude and _.name not in exclude
-											or include and _.name in include,
-									actors() ),
-							channels ))
-	return (channels,greenlets)
+	def accept( plugin ):
+		if all or include and plugin.name in include:
+			if not exclude or plugin.name not in exclude:
+				return True
+	greenlets = spawn( filter(accept, actors()), channels )
+	return (channels,Plugins(greenlets))
 
 if __name__ == "__main__":
-	heavy = [
-			'subdomains.brute',
-			'domain.reverse',
-			'scan.syn',
-			'rank.tic',
-			'rank.pr',
-			'ip.subnet',
-	]
 	light = [
-			'file',
-			'log',
+			'report',
+			'verbose',
 			'ip.reverse',
-			'domain.meta',
-			'domain.lookup',
-			'domain.google',
+			'ns.ext',
+			'ns.lookup',
+			'ns.google',
 			'ip.bing',
+			'ip.geo',
 	]
-	channels, threads = run( include=light )
-	channels.publish( 'opt.file', 'results.txt' )
-	channels.publish( 'domain.*', 'google.com' )
+	channels, plugins = run( include=light )
+	configure(config('config.conf'),plugins)
+	plugins.get('report').set_option('file','results.txt')
+	plugins.invoke()
+	#channels.publish( 'domain.*', 'google.com' )
 	#channels.publish( 'ip.*', '8.8.8.8' )
 	#channels.publish( 'domain.*', 'yandex.ru' )
 	wait()
-	channels.publish( 'signal', 'shutdown' )
-	wait()
+	plugins.shutdown()

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-from core.actor import Actor, forever, action, unique
+from core.actor import Actor, forever, action, unique, Options
 
-from subnet import find
+from subnet import ip_find as find
 
 from iptools import IpRange
 
-class SubnetActor( Actor ):
+class SubnetActor( Options, Actor ):
 
 	name = 'ip.subnet'
 
@@ -14,10 +14,17 @@ class SubnetActor( Actor ):
 		'ip.subnet',
 	]
 
-	def __init__( self, mask=24, *args, **kwargs ):
+	def __init__( self, *args, **kwargs ):
 		super( SubnetActor, self ).__init__( *args, **kwargs )
 		self.ignore = []
-		self.mask = mask
+		self.set_option('mask',24)
+		self.set_option('threads',10)
+
+	def configure( self, config ):
+		if config.has_option(self.name, 'mask'):
+			self.set_option('mask', config.getint(self.name, 'mask'))
+		if config.has_option(self.name, 'threads'):
+			self.set_option('threads', config.getint(self.name, 'threads'))
 
 	@forever
 	@action
@@ -25,6 +32,8 @@ class SubnetActor( Actor ):
 		for ignore_range in self.ignore:
 			if ip in ignore_range:
 				return
-		self.ignore.append(IpRange('{ip}/{mask}'.format(ip=ip,mask=self.mask)))
-		mapping = find( ip, mask=self.mask )
-		[ self.channels.publish('ip.in_subnet',x) for x in mapping.iterkeys() ]
+		mask = self.get_option('mask')
+		concurrency = self.get_option('threads')
+		self.ignore.append(IpRange('{ip}/{mask}'.format(ip=ip,mask=mask)))
+		[ self.channels.publish( 'ip.in_subnet', _ )
+		for _ in find( ip, mask=mask, concurrency=concurrency ) ]

@@ -6,6 +6,7 @@ import urlparse
 import iptools.ipv4 as ipv4
 import iptools.ipv6 as ipv6
 import re
+import logging
 
 from http import Session
 
@@ -20,8 +21,15 @@ def bing_domains( ip, session=None ):
 
 		exclude = ''.join([ dn.format( _ ) for _ in domains ])
 
-		data = http.fetch( url.format( ip+exclude ), session=session )
-
+		try:
+			uri = url.format( ip+exclude )
+			data = http.fetch( uri, session=session )
+		except http.Timeout, http.ConnectionError:
+			logging.error('cannot fetch bing @{}'.format( uri ))
+			break
+		if data=='':
+			logging.error('null response by bing @{}'.format( ip ))
+			break
 		xml = lxml.html.fromstring( data )
 		netloc = lambda _: urlparse.urlparse( _.get('href') ).netloc
 		uniq_links = set([ netloc( el ) for el in xml.xpath('//h2/a') ])
@@ -53,19 +61,30 @@ def google_subdomains( domain, session=None ):
 				'from your computer network.'
 	banned_re = re.compile(re.escape( banned_str ))
 	banned = lambda _: True if banned_re.search(_) else False
+	encode = lambda _: _.encode('utf-8')
 
 	while True:
 
 		exclude = ''.join([ dn.format( _ ) for _ in domains ])
 
 		#print '[*] requesting {}'.format( url.format( domain+exclude ))
-		data = http.fetch( url.format( domain+exclude ), session=session )
+		try:
+			uri = url.format( domain+exclude )
+			data = http.fetch( uri, session=session )
+		except http.Timeout, http.ConnectionError:
+			logging.error('cannot fetch google @{}'.format( uri ))
+			break
 
 		if banned(data):
-			raise BannedByGoogle()
+			logging.error('banned by google @{}'.format( domain ))
+			#raise BannedByGoogle()
+			break
+
+		elif data=='':
+			logging.error('null response by google @{}'.format( domain ))
 
 		xml = lxml.html.fromstring( data )
-		uniq_links = list(set([ netloc(normalize(strip( _.text )))
+		uniq_links = list(set([ netloc(normalize(strip(encode( _.text ))))
 								for _ in xml.xpath('//div/cite') ]))
 		domains += uniq_links
 		#print '[+] {}'.format( ' '.join( uniq_links ))
