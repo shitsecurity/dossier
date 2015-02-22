@@ -27,6 +27,8 @@ app
 alpha
 beta
 dev
+developer
+developers
 forum
 chat
 ftp
@@ -108,6 +110,7 @@ investor
 funding
 finance
 trading
+commerce
 server
 domain
 dc
@@ -167,3 +170,6 @@ solutions
 studio
 lan
 guest
+cpanel
+cp
+support
