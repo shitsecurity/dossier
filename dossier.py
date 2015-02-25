@@ -65,9 +65,6 @@ def parse_args():
 	if args.enabled and args.all:
 		parser.error('shit happens bro')
 
-	if args.enabled and args.disabled:
-		parser.error('u dun goofed')
-
 	if args.light:
 		args.enabled += light
 

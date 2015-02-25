@@ -11,7 +11,6 @@ class SubdomainsActor( Options, Actor ):
 	name = 'ns.brute'
 
 	listeners =  [
-		'subdomains.brute',
 		'domain.brute',
 	]
 

@@ -26,14 +26,14 @@ class LogActor( Actor ):
 		logging.debug( '{channel} | {data}'.format( channel=channel.upper(),
 													data = data ))
 
-class FileActor( Options, FilterMixin, Actor ):
+class ReportActor( Options, FilterMixin, Actor ):
 
 	name = 'report'
 
 	listeners =  [ '*', ]
 
 	def __init__( self, *args, **kwargs ):
-		super( FileActor, self ).__init__( *args, **kwargs )
+		super( ReportActor, self ).__init__( *args, **kwargs )
 		self.cache = set()
 		self.set_option('file','results')
 

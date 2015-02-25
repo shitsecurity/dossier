@@ -10,7 +10,7 @@ class WhoisDomainActor( Actor ):
 
 	listeners =  [
 		'domain.whois',
-		'domain.*',
+		'domain.lookup.whois',
 	]
 
 	@forever

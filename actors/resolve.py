@@ -28,7 +28,7 @@ class NSLookupActor( Actor ):
 		[ self.channels.publish( 'map.domain_ip',
 								{'domain':domain,'ip': _ }) for _ in names ]
 
-class DomainActor( Actor ):
+class NSExtendedActor( Actor ):
 
 	name = 'ns.ext'
 
@@ -38,7 +38,7 @@ class DomainActor( Actor ):
 	]
 
 	def __init__( self, *args, **kwargs ):
-		super( DomainActor, self ).__init__( *args, **kwargs )
+		super( NSExtendedActor, self ).__init__( *args, **kwargs )
 		self.resolver = Resolver()
 
 	@forever
@@ -48,7 +48,7 @@ class DomainActor( Actor ):
 		names = meta( domain, resolver=self.resolver )
 		[ self.channels.publish('domain.lookup', _ ) for _ in names ]
 
-class ReverseDNSActor( Actor ):
+class ReverseNSActor( Actor ):
 
 	name = 'ns.reverse'
 
@@ -57,7 +57,7 @@ class ReverseDNSActor( Actor ):
 	]
 
 	def __init__( self, *args, **kwargs ):
-		super( ReverseDNSActor, self ).__init__( *args, **kwargs )
+		super( ReverseNSActor, self ).__init__( *args, **kwargs )
 		self.resolver = Resolver()
 
 	@forever
@@ -65,7 +65,7 @@ class ReverseDNSActor( Actor ):
 	@unique
 	def act( self, domain ):
 		names = reverse_dns( domain, resolver=self.resolver )
-		[ self.channels.publish('domain.lookup.reverse_dns', _) for _ in names ]
+		[ self.channels.publish('domain.lookup.*', _) for _ in names ]
 
 class ReverseIPActor( Actor ):
 
@@ -107,7 +107,7 @@ class BingIPActor( Actor ):
 		names = domains( ip, session=self.session )
 		[ self.channels.publish('domain.lookup.*', _ ) for _ in names ]
 
-class GoogleDNActor( Actor ):
+class GoogleNSActor( Actor ):
 
 	name = 'ns.google'
 
@@ -116,7 +116,7 @@ class GoogleDNActor( Actor ):
 	]
 
 	def __init__( self, *args, **kwargs ):
-		super( GoogleDNActor, self ).__init__( *args, **kwargs )
+		super( GoogleNSActor, self ).__init__( *args, **kwargs )
 		self.session = Session()
 
 	@forever
