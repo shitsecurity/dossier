@@ -19,6 +19,8 @@ def aaaa( domain, resolver=None ):
 	dn = dns.name.from_text( str(domain) )
 	try:
 		names = [ _.to_text() for _ in resolver.query( dn, 'AAAA' )]
-	except( dns.resolver.NXDOMAIN, dns.resolver.NoAnswer ):
+	except( dns.resolver.NXDOMAIN,
+			dns.resolver.NoAnswer,
+			dns.resolver.NoNameservers ):
 		return []
 	return names
