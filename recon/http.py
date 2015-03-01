@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import requests.packages
+requests.packages.urllib3.disable_warnings()
+
 from requests import Session as RequestsSession
 from requests.exceptions import Timeout
 from requests.exceptions import ConnectionError
