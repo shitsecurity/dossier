@@ -6,7 +6,7 @@ BeautifulSoup4
 pyyaml
 straight.plugin
 gevent
-mmh3
+mmh3==2.0
 configparser
 python-geoip-geolite2
 python-whois

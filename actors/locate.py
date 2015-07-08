@@ -6,16 +6,16 @@ from geo import geoip_country
 
 class GeoIPActor( Actor ):
 
-	name = 'ip.geo'
+    name = 'ip.geo'
 
-	listeners =  [
-		'ip.geo',
-		'ip.*',
-	]
+    listeners =  [
+        'ip.geo',
+        'ip.*',
+    ]
 
-	@forever
-	@action
-	@unique
-	def act( self, ip ):
-		country = geoip_country( ip )
-		self.channels.publish('geoip.*', { 'ip': ip, 'country': country })
+    @forever
+    @action
+    @unique
+    def act( self, ip ):
+        country = geoip_country( ip )
+        self.channels.publish('geoip.*', { 'ip': ip, 'country': country })

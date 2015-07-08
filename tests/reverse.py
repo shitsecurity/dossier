@@ -16,10 +16,10 @@ from functools import partial
 targets = iptools.IpRangeList(( '8.8.4.4', '8.8.4.4' ))
 
 for target in targets:
-	for domain in ptr( target ):
-		print all_dns( domain )
+    for domain in ptr( target ):
+        print all_dns( domain )
 
 print reverse_dns( 'google.com', engine=yougetsignal )
 
 print filter(partial( verify, ips=a('google.com'), resolver=Resolver() ),
-			 reverse_dns( 'google.com', engine=dnsdigger ))
+             reverse_dns( 'google.com', engine=dnsdigger ))

@@ -7,87 +7,87 @@ from core.actor import Actor, forever, hash, FilterMixin, Options
 
 class LogActor( Actor ):
 
-	name = 'verbose'
+    name = 'verbose'
 
-	listeners =  [ '*', ]
+    listeners =  [ '*', ]
 
-	def __init__( self, *args, **kwargs ):
-		super( LogActor, self ).__init__( *args, **kwargs )
-		setup_log()
-		self.cache = set()
+    def __init__( self, *args, **kwargs ):
+        super( LogActor, self ).__init__( *args, **kwargs )
+        setup_log()
+        self.cache = set()
 
-	@forever
-	def act( self ):
-		(channel,data) = self.queue.get()
-		hashed = hash( data )
-		if hashed in self.cache: return
-		self.cache.add( hashed )
-		if channel.startswith('map.'): return
-		logging.debug( '{channel} | {data}'.format( channel=channel.upper(),
-													data = data ))
+    @forever
+    def act( self ):
+        (channel,data) = self.queue.get()
+        hashed = hash( data )
+        if hashed in self.cache: return
+        self.cache.add( hashed )
+        if channel.startswith('map.'): return
+        logging.debug( '{channel} | {data}'.format( channel=channel.upper(),
+                                                    data = data ))
 
 class ReportActor( Options, FilterMixin, Actor ):
 
-	name = 'report'
+    name = 'report'
 
-	listeners =  [ '*', ]
+    listeners =  [ '*', ]
 
-	def __init__( self, *args, **kwargs ):
-		super( ReportActor, self ).__init__( *args, **kwargs )
-		self.cache = set()
-		self.set_option('file','results')
+    def __init__( self, *args, **kwargs ):
+        super( ReportActor, self ).__init__( *args, **kwargs )
+        self.cache = set()
+        self.set_option('file','results')
 
-	def configure( self, config ):
-		if config.has_option(self.name, 'file'):
-			self.set_option('file', config.get(self.name, 'file'))
-		
-	def invoke( self ):
-		self.fh = open( self.get_option('file'), 'wb+' )
+    def configure( self, config ):
+        if config.has_option(self.name, 'file'):
+            self.set_option('file', config.get(self.name, 'file'))
 
-	def shutdown( self ):
-		self.fh.close()
+    def invoke( self ):
+        self.fh = open( self.get_option('file'), 'wb+' )
 
-	@forever
-	def act( self ):
-		(channel,data) = self.queue.get()
+    def shutdown( self ):
+        self.fh.close()
 
-		if self.filter( channel, data ):
-			return
+    @forever
+    def act( self ):
+        (channel,data) = self.queue.get()
 
-		hashed = hash( data )
-		if hashed in self.cache: return
-		self.cache.add( hashed )
+        if self.filter( channel, data ):
+            return
 
-		type = channel.split('.')[0]
+        hashed = hash( data )
+        if hashed in self.cache: return
+        self.cache.add( hashed )
 
-		if type == 'map':
-			self.fh.write('MAP {} {}\n'.format( data.get('ip'),
-												data.get('domain') ))
+        type = channel.split('.')[0]
 
-		elif type == 'ip':
-			self.fh.write('IP {}\n'.format( data ))
+        if type == 'map':
+            self.fh.write('MAP {} {}\n'.format( data.get('ip'),
+                                                data.get('domain') ))
 
-		elif type == 'domain':
-			self.fh.write('DOMAIN {}\n'.format( data ))
+        elif type == 'ip':
+            self.fh.write('IP {}\n'.format( data ))
 
-		elif type == 'rank':
-			engine = channel.split('.')[1]
-			self.fh.write('RANK.{} {} {}\n'.format( engine.upper(),
-													data.get('domain'),
-													data.get('rank')) )
+        elif type == 'domain':
+            self.fh.write('DOMAIN {}\n'.format( data ))
 
-		elif type == 'port':
-			proto = channel.split('.')[1]
-			self.fh.write('PORT.{} {} {}\n'.format( proto,
-													data.get('ip'),
-													data.get('port')) )
+        elif type == 'rank':
+            engine = channel.split('.')[1]
+            self.fh.write('RANK.{} {} {}\n'.format( engine.upper(),
+                                                    data.get('domain'),
+                                                    data.get('rank') ))
 
-		elif type == 'geoip':
-			self.fh.write( 'GEOIP {} {}\n'.format( data.get('ip'),
-													data.get('country') ))
+        elif type == 'port':
+            proto = channel.split('.')[1]
+            self.fh.write('PORT.{} {} {}\n'.format( proto,
+                                                    data.get('ip'),
+                                                    data.get('port') ))
 
-		elif type == 'whois':
-			key_type, key_data = channel.split('.')[1:3]
-			self.fh.write('WHOIS.{} {} {}\n'.format(key_type.upper(),
-													data.get(key_type),
-													data.get(key_data) ))
+        elif type == 'geoip':
+            self.fh.write( 'GEOIP {} {}\n'.format( data.get('ip'),
+                                                   data.get('country') ))
+
+        elif type == 'whois':
+            key_type, key_data = channel.split('.')[1:3]
+            self.fh.write('WHOIS.{} {} {}\n'.format(key_type.upper(),
+                                                    data.get(key_type),
+                                                    data.get(key_data) ))

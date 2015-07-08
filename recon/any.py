@@ -10,8 +10,8 @@ from recon.srv import srv
 from itertools import chain
 
 def any( domain, resolver=None ):
-	return reduce( lambda x,y: x+y,
-					filter( lambda _: len(_)>0,
-							map(lambda _: _(domain, resolver=resolver ),
-								[ a, aaaa, soa, ns, cname, mx, srv ] )),
-					[])
+    return reduce( lambda x,y: x+y,
+                   filter( lambda _: len(_)>0,
+                           map(lambda _: _(domain, resolver=resolver ),
+                               [ a, aaaa, soa, ns, cname, mx, srv ] )),
+                   [])

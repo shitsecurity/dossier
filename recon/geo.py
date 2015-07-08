@@ -6,4 +6,4 @@ from exceptions import safe
 
 @safe( AttributeError )
 def geoip_country( ip ):
-	return geolite2.lookup( ip ).country
+    return geolite2.lookup( ip ).country

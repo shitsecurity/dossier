@@ -26,43 +26,43 @@ from recon.search import google_subdomains
 from recon.search import Session
 
 def lookup( domain, *args, **kwargs ):
-	return a( domain, *args, **kwargs )
+    return a( domain, *args, **kwargs )
 
 def lookupv4( domain, *args, **kwargs ):
-	return a( domain, *args, **kwargs )
+    return a( domain, *args, **kwargs )
 
 def lookupv6( domain, *args, **kwargs ):
-	return aaaa( domain, *args, **kwargs )
+    return aaaa( domain, *args, **kwargs )
 
 def meta( domain, *args, **kwargs ):
-	names = set()
-	[names.update(_(domain,*args,**kwargs)) for _ in [soa,ns,mx,srv,cname]]
-	return list(names)
+    names = set()
+    [names.update(_(domain,*args,**kwargs)) for _ in [soa,ns,mx,srv,cname]]
+    return list(names)
 
 def reverse_ip( ip, *args, **kwargs ):
-	names = set()
-	[ names.update( all_dns(_) )
-	  for _ in ptr( ip, *args, **kwargs )
-	  if verify_ip( ip, _ ) ]
-	return list(names)
+    names = set()
+    [ names.update( all_dns(_) )
+      for _ in ptr( ip, *args, **kwargs )
+      if verify_ip( ip, _ ) ]
+    return list(names)
 
 def reverse_dns( domain, *args, **kwargs ):
-	names = set()
-	ips = a(domain,*args,**kwargs)
-	names.update([_.lstrip('www.') for _ in
-				  filter(partial(verify_dns,
-					  			 ips=ips,
-					  			 *args,
-								 **kwargs),
-						 reverse_dns_unverified(domain,engine=dnsdigger))])
-	return list(names)
+    names = set()
+    ips = a(domain,*args,**kwargs)
+    names.update([_.lstrip('www.') for _ in
+                  filter(partial(verify_dns,
+                                 ips=ips,
+                                 *args,
+                                 **kwargs),
+                         reverse_dns_unverified(domain,engine=dnsdigger))])
+    return list(names)
 
 def domains( host, *args, **kwargs ):
-	names = set()
-	domains = bing_domains( host, *args, **kwargs )
-	return list(domains)
+    names = set()
+    domains = bing_domains( host, *args, **kwargs )
+    return list(domains)
 
 def subdomains( domain, *args, **kwargs ):
-	names = set()
-	subdomains = google_subdomains( domain, *args, **kwargs )
-	return list(subdomains)
+    names = set()
+    subdomains = google_subdomains( domain, *args, **kwargs )
+    return list(subdomains)

@@ -19,8 +19,8 @@ resolver = Resolver()
 names = []
 
 for target in targets:
-	for domain in ptr( target, resolver=resolver ):
-		if verify( target, domain, resolver=resolver ):
-			names += filter( in_subnet, all_dns( domain ))
+    for domain in ptr( target, resolver=resolver ):
+        if verify( target, domain, resolver=resolver ):
+            names += filter( in_subnet, all_dns( domain ))
 
 print names
