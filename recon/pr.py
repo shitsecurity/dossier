@@ -18,9 +18,5 @@ def pr( domain, session=None ):
         + '/tbr?client=navclient-auto&ch={hash}&features=Rank&q=info:{domain}'
     url = url.format( hash=hash(domain), domain=domain )
     data = http.fetch( url, session=session )
-    rank = data.split(':')[-1].strip()
-    if rank == '':
-        rank = 0
-    else:
-        rank = int(rank)
+    rank = int(data.split(':')[-1].strip() or 0)
     return rank
