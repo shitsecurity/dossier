@@ -44,8 +44,8 @@ scapy (optional):
 
 ```
 cd install
-./scapy.sh
-./scapy/setup.py install
+bash scapy.sh
+python scapy/setup.py install
 ```
 
 # Usage
@@ -53,7 +53,7 @@ cd install
 Specify multiple targets in multiple formats:
 
 ```
-./dossier.py --ip 192.168.0.1 --ip-range 192.168.1.0/24 --domain localhost --ip 192.168.0.2 --ip-range 192.168.2.0/28 --domain local
+./dossier.py --ip 192.168.0.1 192.168.0.2 --ip-range 192.168.1.0/24 192.168.2.0/28 --domain localhost local
 ```
 
 Brute subdomains and check google:

@@ -55,7 +55,6 @@ def parse_args():
         'ns.ext',
         'ns.lookup',
         'ns.google',
-        'ip.bing',
         'ip.geo',
     ]
 
