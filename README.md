@@ -88,11 +88,3 @@ enable scapy:
 sudo bash
 . env/bin/activate
 ```
-
-# Bugs
-
-straight.plugin fix:
-
-```
-bash install/install.sh
-```

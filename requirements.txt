@@ -4,7 +4,7 @@ requests
 lxml
 BeautifulSoup4
 pyyaml
-straight.plugin
+straight.plugin==1.4.0-post-1
 gevent
 mmh3==2.0
 configparser
